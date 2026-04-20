@@ -8,9 +8,11 @@ spec:
   workspaces:
     - name: source
       persistentVolumeClaim:
-        claimName: source-pvc
+        claimName: oc-lab-pvc
   params:
     - name: repo-url
       value: https://github.com/vinay123b/ci-cd-final-project
-    - name: IMAGE
+    - name: app-name
+      value: ci-cd-final-app
+    - name: build-image
       value: image-registry.openshift-image-registry.svc:5000/sn-labs-ganapathiraj/ci-cd-final

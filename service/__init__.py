@@ -17,7 +17,7 @@ log_handlers.init_logging(app, "gunicorn.error")
 # Dependencies require we import the routes after the Flask app is created
 # We removed ', models' because the file does not exist
 from service import routes  # pylint: disable=wrong-import-position
-from service.common import error_handlers, cli_commands  # noqa: E402, E261
+from service.common import error_handlers  # noqa: E402, E261
 
 app.logger.info(70 * "*")
 app.logger.info(" SERVICE RUNNING ".center(70, "*"))

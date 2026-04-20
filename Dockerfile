@@ -10,6 +10,7 @@ RUN python -m pip install -U pip wheel && \
 
 # Copy source files last because they change the most
 COPY service ./service
+COPY config.py .
 
 # Become non-root user
 RUN useradd -m -r service && \

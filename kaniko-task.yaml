@@ -1,0 +1,46 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: buildah
+  namespace: sn-labs-ganapathiraj
+spec:
+  params:
+  - name: IMAGE
+    type: string
+  - name: DOCKERFILE
+    default: ./Dockerfile
+  - name: CONTEXT
+    default: .
+  - name: TLSVERIFY
+    default: "true"
+  workspaces:
+  - name: source
+  results:
+  - name: IMAGE_DIGEST
+    type: string
+  - name: IMAGE_URL
+    type: string
+  steps:
+  - name: build-and-push
+    image: gcr.io/kaniko-project/executor:latest
+    args:
+    - --dockerfile=$(params.DOCKERFILE)
+    - --context=$(workspaces.source.path)/$(params.CONTEXT)
+    - --destination=$(params.IMAGE)
+    - --insecure
+    - --skip-tls-verify
+    - --insecure-pull
+    env:
+    - name: DOCKER_CONFIG
+      value: /kaniko/.docker
+    volumeMounts:
+    - name: registry-creds
+      mountPath: /kaniko/.docker
+    workingDir: $(workspaces.source.path)
+  volumes:
+  - name: registry-creds
+    secret:
+      secretName: registry-creds
+      items:
+      - key: .dockerconfigjson
+        path: config.json

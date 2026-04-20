@@ -7,48 +7,42 @@ spec:
     - name: source
   params:
     - name: repo-url
-      type: string
-    - name: revision
-      type: string
-      default: "main"
-    - name: IMAGE
-      type: string
+    - name: app-name
+    - name: build-image
   tasks:
+    - name: cleanup
+      taskRef: {name: cleanup}
+      workspaces: [{name: source, workspace: source}]
+
     - name: git-clone
-      taskRef:
-        name: git-clone
-      workspaces:
-        - name: output
-          workspace: source
+      taskRef: {name: git-clone}
+      runAfter: [cleanup]
+      workspaces: [{name: output, workspace: source}]
       params:
         - name: url
           value: $(params.repo-url)
-        - name: revision
-          value: $(params.revision)
-    - name: cleanup
-      taskRef:
-        name: cleanup
-      runAfter:
-        - git-clone
-      workspaces:
-        - name: source
-          workspace: source
+
+    - name: flake8
+      taskRef: {name: flake8}
+      runAfter: [git-clone]
+      workspaces: [{name: source, workspace: source}]
+
     - name: nose
-      taskRef:
-        name: nose
-      runAfter:
-        - cleanup
-      workspaces:
-        - name: source
-          workspace: source
-    - name: build
-      taskRef:
-        name: build
-      runAfter:
-        - nose
-      workspaces:
-        - name: source
-          workspace: source
+      taskRef: {name: nose}
+      runAfter: [flake8]
+      workspaces: [{name: source, workspace: source}]
+
+    - name: buildah
+      taskRef: {name: buildah}
+      runAfter: [nose]
+      workspaces: [{name: source, workspace: source}]
       params:
         - name: IMAGE
-          value: $(params.IMAGE)
+          value: $(params.build-image)
+
+    - name: deploy
+      taskRef: {name: openshift-client}
+      runAfter: [buildah]
+      params:
+        - name: SCRIPT
+          value: oc create deployment $(params.app-name) --image=$(params.build-image) --dry-run=client -o yaml | oc apply -f -

@@ -1,0 +1,16 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: build-and-deploy-pipeline-run-
+spec:
+  pipelineRef:
+    name: build-and-deploy-pipeline
+  workspaces:
+    - name: source
+      persistentVolumeClaim:
+        claimName: source-pvc
+  params:
+    - name: repo-url
+      value: https://github.com/vinay123b/ci-cd-final-project
+    - name: IMAGE
+      value: image-registry.openshift-image-registry.svc:5000/sn-labs-ganapathiraj/ci-cd-final
